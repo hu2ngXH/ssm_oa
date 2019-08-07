@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.4//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huaxh.oa.dao.EmployeeDao">
+
+    <resultMap id="employee" type="Employee">
+        <id property="sn" column="sn" javaType="String"/>
+        <result property="password" column="passwd" javaType="String"/>
+        <result property="name" column="name" javaType="String"/>
+        <result property="departmentSn" column="department_sn" javaType="String"/>
+        <result property="post" column="post" javaType="String"/>
+        <!--查询的时候把关联的部门也查询出来 property：代表类中的字段名  Column：外键名-->
+        <association property="department" column="department_sn" javaType="Department">
+            <!--设置department的关联关系 如果上下的配置是没有名称冲突 那么就可以使用 resultMap 不一定全都要-->
+            <id property="sn" column="dsn" javaType="String"/>
+            <result property="name" column="dname" javaType="String"/>
+        </association>
+    </resultMap>
+
+    <!--id需要和函数名字一致 才能关联起来 在配置applicationContext-dao中有配置别名 所以可以直接写名字-->
+    <!--values中写的名字是Department的属性名 不是department表的字段名-->
+    <insert id="insert" parameterType="Employee">
+        insert into employee values(#{sn},#{password},#{name},#{departmentSn},#{post})
+    </insert>
+    <!--给一个部门类型的变量 然后通过sn来查找-->
+    <update id="update" parameterType="Employee">
+        update employee set name=#{name},passwd=#{password},department_sn = #{departmentSn},post=#{post} where sn=#{sn}
+    </update>
+
+    <delete id="delete" parameterType="String">
+        delete from employee where sn=#{sn}
+    </delete>
+
+    <!--都查询出来-->
+    <select id="select" parameterType="String" resultMap="employee">
+        select e.* , d.sn dsn,d.name dname from employee e left join department d on d.sn = e.department_sn
+        where e.sn=#{sn}
+    </select>
+
+    <select id="selectAll" resultMap="employee">
+        select e.* , d.sn dsn,d.name dname from employee e left join department d on d.sn = e.department_sn
+    </select>
+</mapper>
